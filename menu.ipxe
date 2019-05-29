@@ -162,7 +162,7 @@ set root-path ${base-iscsi}:${hostname}.CentOS
 set base-url ${sanboot-url}CentOS/x86_64
 set keep-san 1
 sanhook ${root-path} || goto failed
-kernel ${base-url}/images/pxeboot/vmlinuz initrd=initrd.img repo=http://mirror.centos.org/centos/7/os/x86_64
+kernel ${base-url}/images/pxeboot/vmlinuz initrd=initrd.img repo=${base-url}
 initrd ${base-url}/images/pxeboot/initrd.img
 boot || goto failed
 goto start
