@@ -159,18 +159,29 @@ goto start
 :centos-install
 echo Starting CentOS 7 ${archl} installer for ${initiator-iqn}
 set root-path ${base-iscsi}:${hostname}.CentOS
-cpuid --ext 29 && set arch amd64 || set arch x86
 set base-url ${sanboot-url}CentOS/x86_64
-kernel ${base-url}/images/pxeboot/vmlinuz initrd=initrd.img repo=${base-url}
+set keep-san 1
+sanhook ${root-path} || goto failed
+kernel ${base-url}/images/pxeboot/vmlinuz initrd=initrd.img repo=http://mirror.centos.org/centos/7/os/x86_64
 initrd ${base-url}/images/pxeboot/initrd.img
 boot || goto failed
 goto start
 
-:esxi-install
+:esxi-install1
 echo Starting ESXi 6.7 installer for ${initiator-iqn}
 set root-path ${base-iscsi}:${hostname}.ESXi
 cpuid --ext 29 && set arch x86_64 || set arch x86
 set base-url ${sanboot-url}ESXi
 kernel ${base-url}/x86_64/mboot.c32 -c ${base-url}/boot.cfg
 boot || goto failed
+goto start
+
+:esxi-install
+echo Starting ESXi 6.7 installer for ${initiator-iqn}
+set root-path ${base-iscsi}:${hostname}.ESXi
+set base-url ${sanboot-url}ESXi
+set keep-san 1
+sanhook ${root-path} || goto failed
+initrd ${base-url}/VMware-VMvisor-Installer-6.7.0-8169922.x86_64.iso
+chain memdisk iso raw || goto failed
 goto start
