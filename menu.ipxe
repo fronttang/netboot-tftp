@@ -17,10 +17,10 @@ cpuid --ext 29 && set archl amd64 || set archl i386
 :start
 menu iPXE boot menu for ${initiator-iqn}
 item --gap --             ------------------------- Operating systems ------------------------------
-item --key w windows     Boot Windows from iSCSI
+item --key w windows      Boot Windows from iSCSI
 item --key u ubuntu       Boot Ubuntu from iSCSI
 item --key u centos       Boot CentOS from iSCSI
-item --key u esxi       Boot ESXi from iSCSI
+item --key u esxi         Boot ESXi from iSCSI
 item --gap --             ------------------------- Tools and utilities ----------------------------
 item --key d menu-diag    System tools...
 item --key i menu-install Installers...
@@ -99,6 +99,7 @@ goto start
 :menu-diag
 menu Diagnostic tools
 item memtest       Memtest86+
+item winpe         WinPE
 item
 item --key 0x08 back Back to top menu...
 iseq ${menu-default} menu-diag && isset ${submenu-default} && goto menu-diag-timed ||
@@ -112,14 +113,23 @@ initrd ${base-url}/memtest86_5.01.iso
 chain memdisk iso raw || goto failed
 goto start
 
+:winpe
+set base-url http://${nas_ip}:88/tools
+set root-path ${base-iscsi}:${hostname}.Windows
+set keep-san 1
+sanhook ${root-path} || goto failed
+initrd ${base-url}/UQi_USBsys_10th.iso
+chain memdisk iso raw || goto failed
+goto start
+
 ############################ INSTALLER MENU #########################
 
 :menu-install
 menu Installers for ${initiator-iqn}
-item winpe-install      Hook Windows iSCSI and boot WinPE for intallation
+item winpe-install        Hook Windows iSCSI and boot WinPE for intallation
 item ubuntu-install       Hook Ubuntu ${archl} iSCSI and install
 item centos-install       Hook CentOS ${archl} iSCSI and install
-item esxi-install       Hook ESXi ${archl} iSCSI and install
+item esxi-install         Hook ESXi ${archl} iSCSI and install
 item
 item --key 0x08 back      Back to top menu...
 iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
@@ -137,7 +147,6 @@ echo sanhook start...
 sanhook ${root-path} || goto failed
 echo set base url starting
 set base-url http://${nas_ip}:88/Install/WinPE
-
 kernel wimboot
 initrd ${base-url}/x64/Boot/BCD bcd
 initrd ${base-url}/x64/Boot/boot.sdi boot.sdi
