@@ -115,9 +115,6 @@ goto start
 
 :winpe
 set base-url http://${nas_ip}:88/tools
-set root-path ${base-iscsi}:${hostname}.Windows
-set keep-san 1
-sanhook ${root-path} || goto failed
 initrd ${base-url}/UQi_USBsys_10th.iso
 chain memdisk iso raw || goto failed
 goto start
