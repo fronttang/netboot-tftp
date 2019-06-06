@@ -135,7 +135,7 @@ choose selected && goto ${selected} || goto start
 choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
 
 :winpe-install
-echo Booting Windows PE ${arch} installer for ${initiator-iqn}
+echo Booting Windows ${arch} installer for ${initiator-iqn}
 echo (for installing Windows)
 set netX/gateway ${iscsi-server}
 set root-path ${base-iscsi}:${hostname}.Windows
@@ -143,10 +143,10 @@ set keep-san 1
 echo sanhook start...
 sanhook ${root-path} || goto failed
 echo set base url starting
-set base-url http://${nas_ip}:88/Install/WinPE
+set base-url http://${nas_ip}:88/Install/Windows10
 kernel wimboot
-initrd ${base-url}/x64/Boot/BCD bcd
-initrd ${base-url}/x64/Boot/boot.sdi boot.sdi
+initrd ${base-url}/x64/boot/bcd bcd
+initrd ${base-url}/x64/boot/boot.sdi boot.sdi
 initrd ${base-url}/x64/sources/boot.wim boot.wim
 boot || goto failed
 goto start
