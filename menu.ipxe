@@ -68,19 +68,19 @@ goto start
 
 :windows10
 echo Booting Windows10 from iSCSI for ${initiator-iqn}
-set netX/gateway ${iscsi-server}
+#set netX/gateway ${iscsi-server}
 set root-path ${base-iscsi}:${hostname}.Windows
-set keep-san 1
+#set keep-san 1
 sanboot ${root-path} || goto failed
 goto start
 
 :windows7
 echo Booting Windows7 from iSCSI for ${initiator-iqn}
-ifconf --configurator dhcp net1
-ifclose net0
-set netX/gateway ${iscsi-server}
+#ifconf --configurator dhcp net1
+#ifclose net0
+#set netX/gateway 0.0.0.0
 set root-path ${base-iscsi}:${hostname}.Windows7
-set keep-san 1
+#set keep-san 1
 sanboot ${root-path} || goto failed
 goto start
 
