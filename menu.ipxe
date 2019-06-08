@@ -69,7 +69,7 @@ goto start
 :windows10
 echo Booting Windows10 from iSCSI for ${initiator-iqn}
 #set netX/gateway ${iscsi-server}
-set root-path ${base-iscsi}:${hostname}.Windows
+set root-path ${base-iscsi}:${hostname}.Windows10
 #set keep-san 1
 sanboot ${root-path} || goto failed
 goto start
@@ -93,7 +93,7 @@ goto start
 
 :centos
 echo Booting CentOS from iSCSI for ${initiator-iqn}
-set root-path ${base-iscsi}:${hostname}.CentOS
+set root-path ${base-iscsi}:${hostname}.CentOS7
 set keep-san 1
 sanboot ${root-path} || goto failed
 goto start
@@ -119,14 +119,12 @@ choose selected && goto ${selected} || goto start
 choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
 
 :memtest
-set base-url http://${nas_ip}:88/tools
-initrd ${base-url}/memtest86_5.01.iso
+initrd ${tools-url}/memtest86_5.01.iso
 chain memdisk iso raw || goto failed
 goto start
 
 :winpe
-set base-url http://${nas_ip}:88/tools
-initrd ${base-url}/UQi_USBsys_10th.iso
+initrd ${tools-url}/UQi_USBsys_10th.iso
 chain memdisk iso raw || goto failed
 goto start
 
@@ -168,16 +166,16 @@ goto start
 echo Booting Windows10 ${arch} installer for ${initiator-iqn}
 echo (for installing Windows)
 set netX/gateway ${iscsi-server}
-set root-path ${base-iscsi}:${hostname}.Windows
+set root-path ${base-iscsi}:${hostname}.Windows10
 set keep-san 1
 echo sanhook start...
 sanhook ${root-path} || goto failed
 echo set base url starting
-set base-url http://${nas_ip}:88/Install/Windows10
+set base-url ${sanboot-url}/Windows10/${arch}
 kernel wimboot
-initrd ${base-url}/x64/boot/bcd bcd
-initrd ${base-url}/x64/boot/boot.sdi boot.sdi
-initrd ${base-url}/x64/sources/boot.wim boot.wim
+initrd ${base-url}/boot/bcd bcd
+initrd ${base-url}/boot/boot.sdi boot.sdi
+initrd ${base-url}/sources/boot.wim boot.wim
 boot || goto failed
 goto start
 
@@ -190,21 +188,21 @@ set keep-san 1
 echo sanhook start...
 sanhook --drive 0x80 ${root-path} || goto failed
 echo set base url starting
-set base-url http://${nas_ip}:88/Install/Windows7
+set base-url ${sanboot-url}/Windows7/${arch}
 kernel wimboot
-initrd ${base-url}/x64/bootmgr bootmgr
-initrd ${base-url}/x64/boot/bcd bcd
-initrd ${base-url}/x64/boot/boot.sdi boot.sdi
-initrd ${base-url}/x64/sources/boot.wim boot.wim
+initrd ${base-url}/bootmgr bootmgr
+initrd ${base-url}/boot/bcd bcd
+initrd ${base-url}/boot/boot.sdi boot.sdi
+initrd ${base-url}/sources/boot.wim boot.wim
 imgstat
 boot || goto failed
 goto start
 
 :ubuntu-install
-echo Starting Ubuntu 16.04 ${archl} installer for ${initiator-iqn}
+echo Starting Ubuntu 16.04 ${arch} installer for ${initiator-iqn}
 set root-path ${base-iscsi}:${hostname}.Ubuntu
 cpuid --ext 29 && set arch amd64 || set arch x86
-set base-url ${sanboot-url}Ubuntu16/${arch}
+set base-url ${sanboot-url}/Ubuntu16/${arch}
 kernel ${base-url}/netboot/linux
 initrd ${base-url}/netboot/initrd.gz
 imgargs linux auto=true fb=false url=${base-url}/./preseed.cfg DEBCONF_DEBUG=5 netcfg/get_hostname=${hostname}.Ubuntu partman-iscsi/login/address=${iscsi-server} partman-iscsi/login/targets=${base-iqn}:${hostname}.Ubuntu
@@ -212,9 +210,9 @@ boot || goto failed
 goto start
 
 :centos-install
-echo Starting CentOS 7 ${archl} installer for ${initiator-iqn}
-set root-path ${base-iscsi}:${hostname}.CentOS
-set base-url ${sanboot-url}CentOS/x86_64
+echo Starting CentOS 7 ${arch} installer for ${initiator-iqn}
+set root-path ${base-iscsi}:${hostname}.CentOS7
+set base-url ${sanboot-url}/CentOS7/x64
 set keep-san 1
 sanhook ${root-path} || goto failed
 kernel ${base-url}/images/pxeboot/vmlinuz initrd=initrd.img repo=${base-url}
@@ -222,19 +220,10 @@ initrd ${base-url}/images/pxeboot/initrd.img
 boot || goto failed
 goto start
 
-:esxi-install1
-echo Starting ESXi 6.7 installer for ${initiator-iqn}
-set root-path ${base-iscsi}:${hostname}.ESXi
-cpuid --ext 29 && set arch x86_64 || set arch x86
-set base-url ${sanboot-url}ESXi
-kernel ${base-url}/x86_64/mboot.c32 -c ${base-url}/boot.cfg
-boot || goto failed
-goto start
-
 :esxi-install
 echo Starting ESXi 6.7 installer for ${initiator-iqn}
 set root-path ${base-iscsi}:${hostname}.ESXi
-set base-url ${sanboot-url}ESXi
+set base-url ${sanboot-url}/ESXi
 set keep-san 1
 sanhook ${root-path} || goto failed
 initrd ${base-url}/VMware-VMvisor-Installer-6.7.0-8169922.x86_64.iso
